@@ -794,6 +794,13 @@ namespace PKHeX.Core.AutoMod
                 if (set.TeraType != MoveType.Any && set.TeraType != pk9.TeraType)
                     pk9.SetTeraType(set.TeraType);
             }
+            if(enc is EncounterDist9 dist)
+            {
+                var pk9 = (PK9)pk;
+                FindTeraPIDIV(pk9, dist, set);
+                if (set.TeraType != MoveType.Any && set.TeraType != pk9.TeraType)
+                    pk9.SetTeraType(set.TeraType);
+            }
             if (enc is EncounterStatic8N or EncounterStatic8NC or EncounterStatic8ND or EncounterStatic8U)
             {
                 var e = (EncounterStatic)enc;
@@ -881,7 +888,7 @@ namespace PKHeX.Core.AutoMod
             }
         }
 
-        private static void FindTeraPIDIV(PK9 pk, EncounterTera9 enc, IBattleTemplate set)
+        private static void FindTeraPIDIV(PK9 pk, EncounterStatic enc, IBattleTemplate set)
         {
             if (IsMatchCriteria9(pk, set))
                 return;
@@ -897,7 +904,10 @@ namespace PKHeX.Core.AutoMod
                 var param = new GenerateParam9(pk.Species, pi.Gender, enc.FlawlessIVCount, rollCount,
                     undefinedSize, undefinedSize, undefinedSize, undefinedSize,
                     enc.Ability, enc.Shiny);
-                enc.TryApply32(pk, seed, param, EncounterCriteria.Unrestricted);
+                if (enc is EncounterTera9 encount)
+                    encount.TryApply32(pk, seed, param, EncounterCriteria.Unrestricted);
+                if (enc is EncounterDist9 dist)
+                    dist.TryApply32(pk, seed, param, EncounterCriteria.Unrestricted);
                 if (IsMatchCriteria9(pk, set, compromise))
                     break;
                 if (count == 5_000)
