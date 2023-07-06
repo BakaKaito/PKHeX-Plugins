@@ -348,8 +348,17 @@ namespace PKHeX.Core.AutoMod
                     pk.HeldItem = pk.Form != formg ? 0 : pk.HeldItem;
                     pk.Form = pk.Form != formg ? (byte)0 : formg;
                     break;
-                case Species.Giratina when pk.Form == 1 && pk.HeldItem != 112:
-                    pk.HeldItem = 112;
+                case Species.Giratina when pk.Form == 1 && pk.HeldItem != 112 || pk.HeldItem != 1779:
+                    if (pk.Context >= EntityContext.Gen9)
+                        pk.HeldItem = 1779;
+                    else
+                        pk.HeldItem = 112;
+                    break;
+                case Species.Dialga when pk.Form == 1 && pk.HeldItem != 1777:
+                    pk.HeldItem = 1777;
+                    break;
+                case Species.Palkia when pk.Form == 1 && pk.HeldItem != 1778:
+                    pk.HeldItem = 1778;
                     break;
             }
         }
