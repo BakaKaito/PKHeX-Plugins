@@ -270,7 +270,7 @@ namespace PKHeX.Core.AutoMod
                 pk.FixMoves();
             }
 
-            if (la.Parsed && !pk.FatefulEncounter && !MoveResult.AllValid(la.Info.Relearn))
+            if (la.Parsed && !pk.FatefulEncounter)
             {
                 // For dexnav. Certain encounters come with "random" relearn moves, and our requested moves might require one of them.
                 Span<ushort> moves = stackalloc ushort[4];
@@ -348,7 +348,7 @@ namespace PKHeX.Core.AutoMod
                     pk.HeldItem = pk.Form != formg ? 0 : pk.HeldItem;
                     pk.Form = pk.Form != formg ? (byte)0 : formg;
                     break;
-                case Species.Giratina when pk.Form == 1 && pk.HeldItem != 112 || pk.HeldItem != 1779:
+                case Species.Giratina when pk.Form == 1 && pk.HeldItem != 112 && pk.HeldItem != 1779:
                     if (pk.Context >= EntityContext.Gen9)
                         pk.HeldItem = 1779;
                     else
