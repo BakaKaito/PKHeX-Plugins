@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,7 +75,7 @@ namespace PKHeX.Core.AutoMod
             if (dest.Generation <= 2)
                 template.EXP = 0; // no relearn moves in gen 1/2 so pass level 1 to generator
 
-            var encounters = GetAllEncounters(pk: template, moves: Array.Empty<ushort>(), gamelist);
+            var encounters = GetAllEncounters(pk: template, moves: set.Moves, gamelist);
             var criteria = EncounterCriteria.GetCriteria(set, template.PersonalInfo);
             criteria.ForceMinLevelRange = true;
             if (regen.EncounterFilters != null)
@@ -162,7 +163,7 @@ namespace PKHeX.Core.AutoMod
             return last ?? template;
         }
 
-        private static IEnumerable<IEncounterable> GetAllEncounters(PKM pk, ushort[] moves, IReadOnlyList<GameVersion> vers)
+        private static IEnumerable<IEncounterable> GetAllEncounters(PKM pk, ReadOnlyMemory<ushort> moves, IReadOnlyList<GameVersion> vers)
         {
             var orig_encs = EncounterMovesetGenerator.GenerateEncounters(pk, moves, vers);
             foreach (var enc in orig_encs)
@@ -787,17 +788,15 @@ namespace PKHeX.Core.AutoMod
         /// <param name="set">Set to pass in requested IVs</param>
         private static void PreSetPIDIV(this PKM pk, IEncounterable enc, IBattleTemplate set)
         {
-            if (enc is EncounterTera9 tera)
+            if (enc is EncounterTera9 or EncounterDist9 or EncounterMight9)
             {
                 var pk9 = (PK9)pk;
-                FindTeraPIDIV(pk9, tera, set);
-                if (set.TeraType != MoveType.Any && set.TeraType != pk9.TeraType)
-                    pk9.SetTeraType(set.TeraType);
-            }
-            if(enc is EncounterDist9 dist)
-            {
-                var pk9 = (PK9)pk;
-                FindTeraPIDIV(pk9, dist, set);
+                switch (enc)
+                {
+                    case EncounterTera9 tera: FindTeraPIDIV(pk9, tera, set); break;
+                    case EncounterDist9 dist: FindTeraPIDIV(pk9, dist, set); break;
+                    case EncounterMight9 might: FindTeraPIDIV(pk9, might, set); break;
+                }
                 if (set.TeraType != MoveType.Any && set.TeraType != pk9.TeraType)
                     pk9.SetTeraType(set.TeraType);
             }
@@ -888,11 +887,10 @@ namespace PKHeX.Core.AutoMod
             }
         }
 
-        private static void FindTeraPIDIV(PK9 pk, EncounterStatic enc, IBattleTemplate set)
+        private static async void FindTeraPIDIV(PK9 pk, EncounterStatic enc, IBattleTemplate set)
         {
             if (IsMatchCriteria9(pk, set))
                 return;
-
             var count = 0;
             var compromise = false;
             do
@@ -909,7 +907,10 @@ namespace PKHeX.Core.AutoMod
                 if (enc is EncounterDist9 dist)
                     dist.TryApply32(pk, seed, param, EncounterCriteria.Unrestricted);
                 if (IsMatchCriteria9(pk, set, compromise))
+                {
+                    
                     break;
+                }
                 if (count == 5_000)
                     compromise = true;
             } while (++count < 15_000);

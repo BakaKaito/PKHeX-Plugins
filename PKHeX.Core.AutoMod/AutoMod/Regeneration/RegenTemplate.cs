@@ -45,7 +45,7 @@ namespace PKHeX.Core.AutoMod
             Level = set.Level == 50 ? 100 : set.Level;
             Shiny = set.Shiny;
             Friendship = set.Friendship;
-            Nature = set.Nature;
+            Nature = set.Nature == -1? 0: set.Nature;
             FormName = set.FormName;
             Form = set.Form;
             EVs = SanitizeEVs(set.EVs, gen);
