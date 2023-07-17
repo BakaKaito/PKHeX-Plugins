@@ -139,8 +139,8 @@ namespace PKHeX.Core.AutoMod
                     pk.Nature = Util.Rand.Next(25);
                 }
             }
-
-            pk.SetSuggestedFormArgument(enc.Species);
+            if(pk is IFormArgument)
+                pk.SetSuggestedFormArgument(enc.Species);
             if (evolutionRequired)
                 pk.RefreshAbility(pk.AbilityNumber >> 1);
 
@@ -149,7 +149,7 @@ namespace PKHeX.Core.AutoMod
                 pk.Met_Level = pk.CurrentLevel;
             if (set.Level != 100 && set.Level == enc.LevelMin && pk.Format is 3 or 4)
                 pk.EXP = Experience.GetEXP(enc.LevelMin + 1, PersonalTable.HGSS[enc.Species].EXPGrowth) - 1;
-
+           
             var currentlang = (LanguageID)pk.Language;
             var finallang = lang ?? currentlang;
             if (finallang == LanguageID.Hacked)
@@ -278,7 +278,9 @@ namespace PKHeX.Core.AutoMod
                 pk.ClearRelearnMoves();
                 pk.SetRelearnMoves(moves);
             }
-
+            la = new LegalityAnalysis(pk);
+            if (la.Info.Relearn.Any(z => z.Judgement == Severity.Invalid))
+                pk.ClearRelearnMoves();
             if (pk is IAwakened)
             {
                 pk.SetAwakenedValues(set);

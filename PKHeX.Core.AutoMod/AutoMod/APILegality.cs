@@ -164,7 +164,7 @@ namespace PKHeX.Core.AutoMod
 
         private static IEnumerable<IEncounterable> GetAllEncounters(PKM pk, ushort[] moves, IReadOnlyList<GameVersion> vers)
         {
-            var orig_encs = EncounterMovesetGenerator.GenerateEncounters(pk, moves, vers);
+            var orig_encs = EncounterMovesetGenerator.GenerateEncounters(pk, new ReadOnlyMemory<ushort>(moves), vers);
             foreach (var enc in orig_encs)
                 yield return enc;
             var pi = pk.PersonalInfo;
