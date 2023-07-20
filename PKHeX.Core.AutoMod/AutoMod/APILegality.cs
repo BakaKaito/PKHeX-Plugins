@@ -141,7 +141,11 @@ namespace PKHeX.Core.AutoMod
                     if (!BatchEditing.TryModify(pk, b.Filters, b.Instructions) && b.Filters.Count > 0)
                         continue;
                 }
-
+                if(pk is IScaledSizeValue sv) //correct
+                {
+                    sv.WeightAbsolute = sv.CalcWeightAbsolute;
+                    sv.HeightAbsolute = sv.CalcHeightAbsolute;
+                }
                 if (pk is PK1 pk1 && pk1.TradebackValid())
                 {
                     satisfied = LegalizationResult.Regenerated;

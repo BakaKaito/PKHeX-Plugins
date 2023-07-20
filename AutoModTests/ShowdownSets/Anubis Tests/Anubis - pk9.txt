@@ -12871,7 +12871,7 @@ Tera Type: Dragon
 Level: 39
 Shiny: Yes
 Bashful Nature
-=Met_Location=147
+.Met_Location=147
 .Version=47
 ~=Generation=8
 - Flail
