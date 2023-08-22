@@ -168,7 +168,7 @@ namespace PKHeX.Core.AutoMod
                     raw = basepk1.ConvertToPK2();
 
                 // Bring to the target generation and filter
-                var pk = EntityConverter.ConvertToType(raw, destType, out _);
+                pk = EntityConverter.ConvertToType(raw, destType, out _);
                 if (pk == null)
                     continue;
                 if (EntityConverter.IsIncompatibleGB(pk, template.Japanese, pk.Japanese))
