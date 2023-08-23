@@ -13,6 +13,7 @@ namespace AutoModTests
         [InlineData(GameVersion.US, Meowstic)]
         [InlineData(GameVersion.US, Darkrai)]
         [InlineData(GameVersion.B2, Genesect)]
+        [InlineData(GameVersion.C, broken)]
         public static void VerifyManually(GameVersion game, string txt)
         {
             var dev = APILegality.EnableDevMode;
@@ -31,7 +32,11 @@ namespace AutoModTests
             var la = new LegalityAnalysis(pkm);
             la.Valid.Should().BeTrue();
         }
-
+        private const string broken =
+            @"Gyarados (M)
+IVs: 9 HP / 9 Atk / 2 Def / 11 SpA / 11 SpD / 12 Spe
+Level: 15
+- Thrash";
         private const string Darkrai =
 @"Darkrai
 IVs: 7 Atk

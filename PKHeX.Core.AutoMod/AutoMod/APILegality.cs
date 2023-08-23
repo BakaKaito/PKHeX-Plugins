@@ -113,12 +113,7 @@ namespace PKHeX.Core.AutoMod
                     pk.CurrentHandler = 1;
                     return pk;
                 }
-                if(enc.Context == EntityContext.Gen2 && enc.Species != (ushort)Species.Poliwag)
-                {
-                    satisfied = LegalizationResult.Regenerated;
-                    pk.CurrentHandler = 1;
-                    return pk;
-                }
+        
                 if(enc is EncounterStatic4 && enc.Species == (ushort)Species.Giratina)
                 {
                     satisfied = LegalizationResult.Regenerated;
@@ -166,7 +161,8 @@ namespace PKHeX.Core.AutoMod
                 // Transfer any VC1 via VC2, as there may be GSC exclusive moves requested.
                 if (dest.Generation >= 7 && raw is PK1 basepk1)
                     raw = basepk1.ConvertToPK2();
-
+                if (dest.Generation >= 7 && raw is PK2 basepk2)
+                    raw = basepk2.ConvertToPK7();
                 // Bring to the target generation and filter
                 pk = EntityConverter.ConvertToType(raw, destType, out _);
                 if (pk == null)
@@ -797,7 +793,8 @@ namespace PKHeX.Core.AutoMod
 
             else if (enc.Generation is not (3 or 4))
             {
-                pk.IVs = set.IVs;
+                if(enc.Generation >4)
+                    pk.IVs = set.IVs;
                 if (pk is IAwakened)
                 {
                     pk.SetAwakenedValues(set);
@@ -826,7 +823,7 @@ namespace PKHeX.Core.AutoMod
                 case EncounterEgg:
                     pk.SetPIDNature(pk.Nature);
                     return;
-                // EncounterTrade4 doesn't have fixed PIDs, so don't early retur
+                // EncounterTrade4 doesn't have fixed PIDs, so don't early return
                
                 default:
                     FindPIDIV(pk, method, hpType, set.Shiny, enc);
