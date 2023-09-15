@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,25 +10,34 @@ namespace PKHeX.Core.AutoMod
     {
         public static string ANALYSIS_INVALID { get; set; } = "Specific analysis for this set is unavailable.";
         public static string EXHAUSTED_ENCOUNTERS { get; set; } = "No valid matching encounter available: (Exhausted {0}/{1} possible encounters).";
-        public static string SPECIES_UNAVAILABLE_FORM { get; set; } = "{0} with form {1} is unavailable in this game.";
-        public static string SPECIES_UNAVAILABLE { get; set; } = "{0} is unavailable in the game.";
-        public static string INVALID_MOVES { get; set; } = "{0} cannot learn the following move(s) in this game: {1}.";
+        public static string SPECIES_UNAVAILABLE_FORM { get; set; } = "{0} with form {1} is unavailable in {1}.";
+        public static string SPECIES_UNAVAILABLE { get; set; } = "{0} is unavailable in {1}.";
+        public static string INVALID_MOVES { get; set; } = "{0} cannot learn the following move{1} in this game: {2}.";
         public static string ALL_MOVES_INVALID { get; set; } = "All the requested moves for this Pokémon are invalid.";
         public static string LEVEL_INVALID { get; set; } = "Requested level is lower than the minimum possible level for {0}. Minimum required level is {1}.";
         public static string SHINY_INVALID { get; set; } = "Requested shiny value (ShinyType.{0}) is not possible for the given set.";
         public static string ALPHA_INVALID { get; set; } = "Requested Pokémon cannot be an Alpha.";
         public static string BALL_INVALID { get; set; } = "{0} Ball is not possible for the given set.";
-        public static string ONLY_HIDDEN_ABILITY_AVAILABLE { get; set; } = "You can only obtain {0} with hidden ability in this game.";
-        public static string HIDDEN_ABILITY_UNAVAILABLE { get; set; } = "You cannot obtain {0} with hidden ability in this game.";
+        public static string ONLY_HIDDEN_ABILITY_AVAILABLE { get; set; } = "You can only obtain {0} with hidden ability in {1}.";
+        public static string HIDDEN_ABILITY_UNAVAILABLE { get; set; } = "You cannot obtain {0} with hidden ability in {1}.";
 
         public static string SetAnalysis(this IBattleTemplate set, ITrainerInfo sav, PKM failed)
         {
+            var game = sav.Game switch
+            {
+                42 or 43 => "LGPE",
+                44 or 45 => "SWSH",
+                48 or 49 => "BDSP",
+                47 => "PLA",
+                _ => "SV"
+
+            };
+
             if (failed.Version == 0)
                 failed.Version = sav.Game;
             var species_name = SpeciesName.GetSpeciesNameGeneration(set.Species, (int)LanguageID.English, sav.Generation);
-            var analysis = set.Form == 0 ? string.Format(SPECIES_UNAVAILABLE, species_name)
-                                     : string.Format(SPECIES_UNAVAILABLE_FORM, species_name, set.FormName);
-
+            var analysis = set.Form == 0 ? string.Format(SPECIES_UNAVAILABLE, species_name, game)
+                                     : string.Format(SPECIES_UNAVAILABLE_FORM, species_name, set.FormName, game);
             // Species checks
             var gv = (GameVersion)sav.Game;
             if (!gv.ExistsInGame(set.Species, set.Form))
@@ -63,7 +72,7 @@ namespace PKHeX.Core.AutoMod
             if (!new HashSet<ushort>(original_moves.Where(z => z != 0)).SetEquals(successful_combination))
             {
                 var invalid_moves = string.Join(", ", original_moves.Where(z => !successful_combination.Contains(z) && z != 0).Select(z => $"{(Move)z}"));
-                return successful_combination.Length > 0 ? string.Format(INVALID_MOVES, species_name, invalid_moves) : ALL_MOVES_INVALID;
+                return successful_combination.Length > 0 ? string.Format(INVALID_MOVES, species_name, invalid_moves.Contains(',') ? "s" : "", invalid_moves) : ALL_MOVES_INVALID;
             }
 
             // All moves possible, get encounters
@@ -101,9 +110,9 @@ namespace PKHeX.Core.AutoMod
             // Ability checks
             var abilityreq = APILegality.GetRequestedAbility(failed, set);
             if (abilityreq == AbilityRequest.NotHidden && encounters.All(z => z is IEncounterable { Ability: AbilityPermission.OnlyHidden }))
-                return string.Format(ONLY_HIDDEN_ABILITY_AVAILABLE, species_name);
+                return string.Format(ONLY_HIDDEN_ABILITY_AVAILABLE, species_name, game);
             if (abilityreq == AbilityRequest.Hidden && encounters.All(z => z.Generation is 3 or 4) && destVer.GetGeneration() < 8)
-                return string.Format(HIDDEN_ABILITY_UNAVAILABLE, species_name);
+                return string.Format(HIDDEN_ABILITY_UNAVAILABLE, species_name, game);
 
             // Ball checks
             if (set is RegenTemplate regt && regt.Regen.HasExtraSettings)
