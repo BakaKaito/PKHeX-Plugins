@@ -14,8 +14,8 @@ namespace PKHeX.Core.AutoMod
         public static string SPECIES_UNAVAILABLE { get; set; } = "{0} is unavailable in {1}.";
         public static string INVALID_MOVES { get; set; } = "{0} cannot learn the following move{1} in this game: {2}.";
         public static string ALL_MOVES_INVALID { get; set; } = "All the requested moves for this Pokémon are invalid.";
-        public static string LEVEL_INVALID { get; set; } = "Requested level is lower than the minimum possible level for {0}. Minimum required level is {1}.";
-        public static string SHINY_INVALID { get; set; } = "Requested shiny value (ShinyType.{0}) is not possible for the given set.";
+        public static string LEVEL_INVALID { get; set; } = "Minimum required level for {0} is {1}.";
+        public static string SHINY_INVALID { get; set; } = "Requested Pokémon {0}!";
         public static string ALPHA_INVALID { get; set; } = "Requested Pokémon cannot be an Alpha.";
         public static string BALL_INVALID { get; set; } = "{0} Ball is not possible for the given set.";
         public static string ONLY_HIDDEN_ABILITY_AVAILABLE { get; set; } = "You can only obtain {0} with hidden ability in {1}.";
@@ -99,7 +99,10 @@ namespace PKHeX.Core.AutoMod
             if (set is RegenTemplate ret && ret.Regen.HasExtraSettings)
                 shinytype = ret.Regen.Extra.ShinyType;
             if (encounters.All(z => !APILegality.IsRequestedShinyValid(set, z)))
-                return string.Format(SHINY_INVALID, shinytype);
+            {
+                var error = set.Shiny ? "is Shiny Locked" : "set must be Shiny!";
+                return string.Format(SHINY_INVALID, error);
+            }
             encounters.RemoveAll(enc => !APILegality.IsRequestedShinyValid(set, enc));
 
             // Alpha checks
